@@ -1,5 +1,6 @@
 package com.zett.recipeapi.entities;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -21,4 +22,7 @@ public class Category {
 
     @Column(name = "description", columnDefinition = "NVARCHAR(500)")
     private String description;
+
+    @OneToMany(mappedBy = "category")
+    private List<Recipe> recipes;
 }

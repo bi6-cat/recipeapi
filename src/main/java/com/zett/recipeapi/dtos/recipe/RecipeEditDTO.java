@@ -1,8 +1,7 @@
 package com.zett.recipeapi.dtos.recipe;
 
-import java.util.UUID;
-
 import org.hibernate.validator.constraints.Length;
+import java.util.UUID;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -11,10 +10,11 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeCreateDTO {
+public class RecipeEditDTO {
+    private UUID id;
+    
     @NotNull(message = "Title is required")
     @NotBlank(message = "Title is not empty")
-    @NotEmpty(message = "Title is not empty")
     @Length(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
     private String title;
 

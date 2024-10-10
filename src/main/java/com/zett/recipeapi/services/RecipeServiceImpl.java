@@ -11,19 +11,24 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.zett.recipeapi.dtos.category.CategoryDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
 import com.zett.recipeapi.entities.Recipe;
+import com.zett.recipeapi.repositories.CategoryRepository;
 import com.zett.recipeapi.repositories.RecipeRepository;
 
 @Service
 @Transactional
 public class RecipeServiceImpl implements RecipeService {
     private final RecipeRepository recipeRepository;
+    private final CategoryRepository categoryRepository;
 
     // Inject RecipeRepository via constructor
-    public RecipeServiceImpl(RecipeRepository recipeRepository) {
+    public RecipeServiceImpl(RecipeRepository recipeRepository, CategoryRepository categoryRepository) {
         this.recipeRepository = recipeRepository;
+        this.categoryRepository = categoryRepository;
     }
 
     @Override
@@ -39,6 +44,18 @@ public class RecipeServiceImpl implements RecipeService {
             recipeDTO.setPrepTime(recipe.getPrepTime());
             recipeDTO.setCookTime(recipe.getCookTime());
             recipeDTO.setServings(recipe.getServings());
+
+            // Check if entity recipe has category
+            if (recipe.getCategory() != null) {
+                // Convert Category to CategoryDTO
+                var categoryDTO = new CategoryDTO();
+                categoryDTO.setId(recipe.getCategory().getId());
+                categoryDTO.setName(recipe.getCategory().getName());
+                categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+                // Set categoryDTO to recipeDTO
+                recipeDTO.setCategory(categoryDTO);
+            }
             return recipeDTO;
         }).toList();
 
@@ -79,6 +96,19 @@ public class RecipeServiceImpl implements RecipeService {
             recipeDTO.setPrepTime(recipe.getPrepTime());
             recipeDTO.setCookTime(recipe.getCookTime());
             recipeDTO.setServings(recipe.getServings());
+
+            // Check if entity recipe has category
+            if (recipe.getCategory() != null) {
+                // Convert Category to CategoryDTO
+                var categoryDTO = new CategoryDTO();
+                categoryDTO.setId(recipe.getCategory().getId());
+                categoryDTO.setName(recipe.getCategory().getName());
+                categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+                // Set categoryDTO to recipeDTO
+                recipeDTO.setCategory(categoryDTO);
+            }
+
             return recipeDTO;
         }).toList();
 
@@ -120,6 +150,18 @@ public class RecipeServiceImpl implements RecipeService {
             recipeDTO.setCookTime(recipe.getCookTime());
             recipeDTO.setServings(recipe.getServings());
 
+            // Check if entity recipe has category
+            if (recipe.getCategory() != null) {
+                // Convert Category to CategoryDTO
+                var categoryDTO = new CategoryDTO();
+                categoryDTO.setId(recipe.getCategory().getId());
+                categoryDTO.setName(recipe.getCategory().getName());
+                categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+                // Set categoryDTO to recipeDTO
+                recipeDTO.setCategory(categoryDTO);
+            }
+
             return recipeDTO;
         });
 
@@ -142,6 +184,18 @@ public class RecipeServiceImpl implements RecipeService {
         recipeDTO.setPrepTime(recipe.getPrepTime());
         recipeDTO.setCookTime(recipe.getCookTime());
         recipeDTO.setServings(recipe.getServings());
+
+        // Check if entity recipe has category
+        if (recipe.getCategory() != null) {
+            // Convert Category to CategoryDTO
+            var categoryDTO = new CategoryDTO();
+            categoryDTO.setId(recipe.getCategory().getId());
+            categoryDTO.setName(recipe.getCategory().getName());
+            categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+            // Set categoryDTO to recipeDTO
+            recipeDTO.setCategory(categoryDTO);
+        }
 
         return recipeDTO;
     }
@@ -168,6 +222,18 @@ public class RecipeServiceImpl implements RecipeService {
         recipe.setCookTime(recipeCreateDTO.getCookTime());
         recipe.setServings(recipeCreateDTO.getServings());
 
+        // Check if recipeCreateDTO.getCategoryId() is not null
+        if (recipeCreateDTO.getCategoryId() != null) {
+            // Find category by id
+            var category = categoryRepository.findById(recipeCreateDTO.getCategoryId()).orElse(null);
+
+            // Check if category is not null
+            if (category != null) {
+                // Set category to recipe
+                recipe.setCategory(category);
+            }
+        }
+
         // Save recipe
         recipe = recipeRepository.save(recipe);
 
@@ -181,17 +247,29 @@ public class RecipeServiceImpl implements RecipeService {
         newRecipeDTO.setCookTime(recipe.getCookTime());
         newRecipeDTO.setServings(recipe.getServings());
 
+        // Check if entity recipe has category
+        if (recipe.getCategory() != null) {
+            // Convert Category to CategoryDTO
+            var categoryDTO = new CategoryDTO();
+            categoryDTO.setId(recipe.getCategory().getId());
+            categoryDTO.setName(recipe.getCategory().getName());
+            categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+            // Set categoryDTO to recipeDTO
+            newRecipeDTO.setCategory(categoryDTO);
+        }
+
         return newRecipeDTO;
     }
 
     @Override
-    public RecipeDTO update(UUID id, RecipeDTO recipeDTO) {
-        if (recipeDTO == null) {
+    public RecipeDTO update(UUID id, RecipeEditDTO recipeEditDTO) {
+        if (recipeEditDTO == null) {
             throw new IllegalArgumentException("Recipe is required");
         }
 
         // Checl if recipe name is existed
-        var existedRecipe = recipeRepository.findByTitle(recipeDTO.getTitle());
+        var existedRecipe = recipeRepository.findByTitle(recipeEditDTO.getTitle());
         if (existedRecipe != null && !existedRecipe.getId().equals(id)) {
             throw new IllegalArgumentException("Recipe name is existed");
         }
@@ -204,8 +282,24 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         // Update recipe
-        recipe.setTitle(recipeDTO.getTitle());
-        recipe.setDescription(recipeDTO.getDescription());
+        recipe.setTitle(recipeEditDTO.getTitle());
+        recipe.setDescription(recipeEditDTO.getDescription());
+        recipe.setImage(recipeEditDTO.getImage());
+        recipe.setPrepTime(recipeEditDTO.getPrepTime());
+        recipe.setCookTime(recipeEditDTO.getCookTime());
+        recipe.setServings(recipeEditDTO.getServings());
+
+        // Check if recipeEditDTO.getCategoryId() is not null
+        if (recipeEditDTO.getCategoryId() != null) {
+            // Find category by id
+            var category = categoryRepository.findById(recipeEditDTO.getCategoryId()).orElse(null);
+
+            // Check if category is not null
+            if (category != null) {
+                // Set category to recipe
+                recipe.setCategory(category);
+            }
+        }
 
         // Save recipe => update
         recipe = recipeRepository.save(recipe);
@@ -219,6 +313,18 @@ public class RecipeServiceImpl implements RecipeService {
         updatedRecipeDTO.setPrepTime(recipe.getPrepTime());
         updatedRecipeDTO.setCookTime(recipe.getCookTime());
         updatedRecipeDTO.setServings(recipe.getServings());
+
+        // Check if entity recipe has category
+        if (recipe.getCategory() != null) {
+            // Convert Category to CategoryDTO
+            var categoryDTO = new CategoryDTO();
+            categoryDTO.setId(recipe.getCategory().getId());
+            categoryDTO.setName(recipe.getCategory().getName());
+            categoryDTO.setDescription(recipe.getCategory().getDescription());
+
+            // Set categoryDTO to recipeDTO
+            updatedRecipeDTO.setCategory(categoryDTO);
+        }
 
         return updatedRecipeDTO;
     }
