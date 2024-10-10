@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.zett.recipeapi.dtos.ingredient.IngredientCreateBatchDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientCreateDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 
@@ -18,7 +19,9 @@ public interface IngredientService {
 
     IngredientDTO findById(UUID id);
 
-    IngredientDTO create(IngredientCreateDTO ingredientCreateDTO);
+    IngredientDTO create(IngredientCreateDTO ingredientCreateDTO); 
+
+    List<IngredientDTO> create(IngredientCreateBatchDTO ingredientCreateDTO);
 
     IngredientDTO update(UUID id, IngredientDTO ingredientDTO);
 

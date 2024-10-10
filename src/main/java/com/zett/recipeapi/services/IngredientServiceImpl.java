@@ -3,6 +3,7 @@ package com.zett.recipeapi.services;
 import java.util.List;
 import java.util.UUID;
 
+import com.zett.recipeapi.dtos.ingredient.IngredientCreateBatchDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientCreateDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 import com.zett.recipeapi.entities.Ingredient;
@@ -184,5 +185,30 @@ public class IngredientServiceImpl implements IngredientService {
 
         // Check if ingredient is deleted
         return !ingredientRepository.existsById(id);
+    }
+
+    @Override
+    public List<IngredientDTO> create(IngredientCreateBatchDTO ingredientCreateBatchDTO) {
+        // Kiem tra ingredientDTO null
+        if (ingredientCreateBatchDTO == null) {
+            throw new IllegalArgumentException("Ingredient is required");
+        }
+
+        var ingredients = ingredientCreateBatchDTO.getIngredients().stream().map(ingredientCreateDTO -> {
+            var ingredient = new Ingredient();
+            ingredient.setName(ingredientCreateDTO.getName());
+            return ingredient;
+        }).toList();
+
+        var result = ingredientRepository.saveAll(ingredients);
+
+        var ingredientDTOs = result.stream().map(ingredient -> {
+            var ingredientDTO = new IngredientDTO();
+            ingredientDTO.setId(ingredient.getId());
+            ingredientDTO.setName(ingredient.getName());
+            return ingredientDTO;
+        }).toList();
+
+        return ingredientDTOs;
     }
 }
