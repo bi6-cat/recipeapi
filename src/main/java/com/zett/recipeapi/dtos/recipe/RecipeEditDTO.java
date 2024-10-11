@@ -1,6 +1,8 @@
 package com.zett.recipeapi.dtos.recipe;
 
 import org.hibernate.validator.constraints.Length;
+
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.constraints.*;
@@ -32,4 +34,7 @@ public class RecipeEditDTO {
     private Integer servings; // number of servings
 
     private UUID categoryId;
+
+    private List<RecipeAddIngredientDTO> ingredientList;
+
 }

@@ -248,12 +248,10 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public RecipeDTO create(RecipeCreateDTO recipeCreateDTO) {
-        // Kiem tra recipeDTO null
         if (recipeCreateDTO == null) {
             throw new IllegalArgumentException("Recipe is required");
         }
 
-        // Checl if recipe name is existed
         var existedRecipe = recipeRepository.findByTitle(recipeCreateDTO.getTitle());
         if (existedRecipe != null) {
             throw new IllegalArgumentException("Recipe name is existed");
@@ -268,20 +266,36 @@ public class RecipeServiceImpl implements RecipeService {
         recipe.setCookTime(recipeCreateDTO.getCookTime());
         recipe.setServings(recipeCreateDTO.getServings());
 
-        // Check if recipeCreateDTO.getCategoryId() is not null
         if (recipeCreateDTO.getCategoryId() != null) {
-            // Find category by id
             var category = categoryRepository.findById(recipeCreateDTO.getCategoryId()).orElse(null);
 
-            // Check if category is not null
             if (category != null) {
-                // Set category to recipe
                 recipe.setCategory(category);
             }
         }
 
-        // Save recipe
         recipe = recipeRepository.save(recipe);
+        final var savedRecipe = recipe;
+
+        var recipeIngredients = recipeCreateDTO.getIngredientList().stream().map(recipeAddIngredientDTO -> {
+            var ingredient = ingredientRepository.findById(recipeAddIngredientDTO.getIngredientId()).orElse(null);
+
+            if (ingredient == null) {
+                throw new IllegalArgumentException("Ingredient not found");
+            }
+
+            var recipeIngredientId = new RecipeIngredientId(savedRecipe.getId(), ingredient.getId());
+
+            var recipeIngredient = new RecipeIngredient();
+            recipeIngredient.setId(recipeIngredientId);
+            recipeIngredient.setRecipe(savedRecipe);
+            recipeIngredient.setIngredient(ingredient);
+            recipeIngredient.setAmount(recipeAddIngredientDTO.getAmount());
+            
+            recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
+
+            return recipeIngredient;
+        }).toList();
 
         // Convert Recipe to RecipeDTO
         var newRecipeDTO = new RecipeDTO();
@@ -305,6 +319,19 @@ public class RecipeServiceImpl implements RecipeService {
             newRecipeDTO.setCategory(categoryDTO);
         }
 
+        if(recipeIngredients != null){
+            var ingredients = recipeIngredients.stream().map(recipeIngredient ->{
+                var ingredient = ingredientRepository.findById(recipeIngredient.getIngredient().getId()).orElse(null);
+
+                var ingredientDTO = new IngredientDTO();
+                ingredientDTO.setId(ingredient.getId());
+                ingredientDTO.setName(ingredient.getName());
+
+                return ingredientDTO;
+            }).toList(); 
+            newRecipeDTO.setIngredients(ingredients);
+        }
+       
         return newRecipeDTO;
     }
 
@@ -349,6 +376,7 @@ public class RecipeServiceImpl implements RecipeService {
 
         // Save recipe => update
         recipe = recipeRepository.save(recipe);
+        final var savedRecipe = recipe;
 
         // Convert Recipe to RecipeDTO
         var updatedRecipeDTO = new RecipeDTO();
@@ -370,6 +398,39 @@ public class RecipeServiceImpl implements RecipeService {
 
             // Set categoryDTO to recipeDTO
             updatedRecipeDTO.setCategory(categoryDTO);
+        }
+
+        var recipeIngredients = recipeEditDTO.getIngredientList().stream().map(recipeAddIngredientDTO -> {
+            var ingredient = ingredientRepository.findById(recipeAddIngredientDTO.getIngredientId()).orElse(null);
+
+            if (ingredient == null) {
+                throw new IllegalArgumentException("Ingredient not found");
+            }
+
+            var recipeIngredientId = new RecipeIngredientId(savedRecipe.getId(), ingredient.getId());
+
+            var recipeIngredient = new RecipeIngredient();
+            recipeIngredient.setId(recipeIngredientId);
+            recipeIngredient.setRecipe(savedRecipe);
+            recipeIngredient.setIngredient(ingredient);
+            recipeIngredient.setAmount(recipeAddIngredientDTO.getAmount());
+            
+            recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
+
+            return recipeIngredient;
+        }).toList();
+
+        if(recipeIngredients != null){
+            var ingredients = recipeIngredients.stream().map(recipeIngredient ->{
+                var ingredient = ingredientRepository.findById(recipeIngredient.getIngredient().getId()).orElse(null);
+
+                var ingredientDTO = new IngredientDTO();
+                ingredientDTO.setId(ingredient.getId());
+                ingredientDTO.setName(ingredient.getName());
+
+                return ingredientDTO;
+            }).toList(); 
+            updatedRecipeDTO.setIngredients(ingredients);
         }
 
         return updatedRecipeDTO;
