@@ -15,8 +15,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
 @Service
 @Transactional
 public class IngredientServiceImpl implements IngredientService {
@@ -134,10 +132,35 @@ public class IngredientServiceImpl implements IngredientService {
         var newIngredientDTO = new IngredientDTO();
         newIngredientDTO.setId(ingredient.getId());
         newIngredientDTO.setName(ingredient.getName());
-
+        
         return newIngredientDTO;
     }
 
+    @Override
+    public List<IngredientDTO> create(IngredientCreateBatchDTO ingredientCreateBatchDTO) {
+        // Kiem tra ingredientDTO null
+        if (ingredientCreateBatchDTO == null) {
+            throw new IllegalArgumentException("Ingredient is required");
+        }
+
+        var ingredients = ingredientCreateBatchDTO.getIngredients().stream().map(ingredientCreateDTO -> {
+            var ingredient = new Ingredient();
+            ingredient.setName(ingredientCreateDTO.getName());
+            return ingredient;
+        }).toList();
+
+        var result = ingredientRepository.saveAll(ingredients);
+
+        var ingredientDTOs = result.stream().map(ingredient -> {
+            var ingredientDTO = new IngredientDTO();
+            ingredientDTO.setId(ingredient.getId());
+            ingredientDTO.setName(ingredient.getName());
+            return ingredientDTO;
+        }).toList();
+
+        return ingredientDTOs;
+    }
+    
     @Override
     public IngredientDTO update(UUID id, IngredientDTO ingredientDTO) {
         if (ingredientDTO == null) {
@@ -149,7 +172,7 @@ public class IngredientServiceImpl implements IngredientService {
         if (existedIngredient != null) {
             throw new IllegalArgumentException("Ingredient name is existed");
         }
-
+        
         // Find ingredient by id - Managed
         var ingredient = ingredientRepository.findById(id).orElse(null);
 
@@ -187,28 +210,4 @@ public class IngredientServiceImpl implements IngredientService {
         return !ingredientRepository.existsById(id);
     }
 
-    @Override
-    public List<IngredientDTO> create(IngredientCreateBatchDTO ingredientCreateBatchDTO) {
-        // Kiem tra ingredientDTO null
-        if (ingredientCreateBatchDTO == null) {
-            throw new IllegalArgumentException("Ingredient is required");
-        }
-
-        var ingredients = ingredientCreateBatchDTO.getIngredients().stream().map(ingredientCreateDTO -> {
-            var ingredient = new Ingredient();
-            ingredient.setName(ingredientCreateDTO.getName());
-            return ingredient;
-        }).toList();
-
-        var result = ingredientRepository.saveAll(ingredients);
-
-        var ingredientDTOs = result.stream().map(ingredient -> {
-            var ingredientDTO = new IngredientDTO();
-            ingredientDTO.setId(ingredient.getId());
-            ingredientDTO.setName(ingredient.getName());
-            return ingredientDTO;
-        }).toList();
-
-        return ingredientDTOs;
-    }
 }
