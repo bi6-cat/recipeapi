@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zett.recipeapi.dtos.category.CategoryDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
@@ -66,7 +67,7 @@ public class RecipeServiceImpl implements RecipeService {
 
                 // Set categoryDTO to recipeDTO
                 recipeDTO.setCategory(categoryDTO);
-                
+
             }
             return recipeDTO;
         }).toList();
@@ -391,7 +392,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public RecipeAddIngredientDTO addIngredient(UUID id, UUID ingredientId,
+    public RecipeAddIngredientDTO addIngredient(UUID id,
             RecipeAddIngredientDTO recipeAddIngredientDTO) {
         if (recipeAddIngredientDTO == null) {
             throw new IllegalArgumentException("RecipeAddIngredientDTO is required");
@@ -405,7 +406,7 @@ public class RecipeServiceImpl implements RecipeService {
         }
 
         // Find ingredient by id
-        var ingredient = ingredientRepository.findById(ingredientId).orElse(null);
+        var ingredient = ingredientRepository.findById(recipeAddIngredientDTO.getIngredientId()).orElse(null);
 
         if (ingredient == null) {
             throw new IllegalArgumentException("Ingredient not found");
@@ -424,5 +425,40 @@ public class RecipeServiceImpl implements RecipeService {
         recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
 
         return recipeIngredient != null ? recipeAddIngredientDTO : null;
+    }
+
+    @Override
+    public RecipeAddIngredientListDTO addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO) {
+        if (recipeAddIngredientListDTO == null) {
+            throw new IllegalArgumentException("RecipeAddIngredientListDTO is required");
+        }
+        var recipe = recipeRepository.findById(id).orElse(null);
+
+        if (recipe == null) {
+            throw new IllegalArgumentException("Recipe not found");
+        }
+
+        var recipeIngredients = recipeAddIngredientListDTO.getIngredients().stream().map(recipeAddIngredientDTO -> {
+            var ingredient = ingredientRepository.findById(recipeAddIngredientDTO.getIngredientId()).orElse(null);
+
+            if (ingredient == null) {
+                throw new IllegalArgumentException("Ingredient not found");
+            }
+
+            var recipeIngredientId = new RecipeIngredientId(recipe.getId(), ingredient.getId());
+
+            var recipeIngredient = new RecipeIngredient();
+            recipeIngredient.setId(recipeIngredientId);
+            recipeIngredient.setRecipe(recipe);
+            recipeIngredient.setIngredient(ingredient);
+            recipeIngredient.setAmount(recipeAddIngredientDTO.getAmount());
+            
+            recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
+
+            return recipeIngredient;
+        }).toList();
+
+        return recipeIngredients != null ? recipeAddIngredientListDTO : null;
+        
     }
 }

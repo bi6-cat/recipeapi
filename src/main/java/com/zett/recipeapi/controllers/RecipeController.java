@@ -11,6 +11,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
@@ -38,7 +39,7 @@ public class RecipeController {
     @ApiResponse(responseCode = "200", description = "Return all recipes or search recipes by keyword")
     public ResponseEntity<?> search(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false, defaultValue = "name") String sortBy, // Xac dinh truong sap xep
+            @RequestParam(required = false, defaultValue = "title") String sortBy, // Xac dinh truong sap xep
             @RequestParam(required = false, defaultValue = "asc") String order, // Xac dinh chieu sap xep
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "5") Integer size) {
@@ -144,18 +145,38 @@ public class RecipeController {
         return ResponseEntity.ok(isDeleted);
     }
 
-    @PostMapping("/{id}/add-ingredient/{ingredientId}")
+    @PostMapping("/{id}/add-ingredient/")
     @Operation(summary = "Add ingredient to recipe")
     @ApiResponse(responseCode = "200", description = "Add ingredient to recipe")
     @ApiResponse(responseCode = "404", description = "Recipe or Ingredient not found")
-    public ResponseEntity<?> addIngredient(@PathVariable UUID id, @PathVariable UUID ingredientId,
+    public ResponseEntity<?> addIngredient(@PathVariable UUID id,
             @Valid @RequestBody RecipeAddIngredientDTO recipeAddIngredientDTO, BindingResult bindingResult) {
-        
+
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
 
-        var result = recipeService.addIngredient(id, ingredientId, recipeAddIngredientDTO);
+        var result = recipeService.addIngredient(id, recipeAddIngredientDTO);
+
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/add-list-ingredient/")
+    @Operation(summary = "Add ingredient to recipe")
+    @ApiResponse(responseCode = "200", description = "Add ingredient to recipe")
+    @ApiResponse(responseCode = "404", description = "Recipe or Ingredient not found")
+    public ResponseEntity<?> addListIngredient(@PathVariable UUID id,
+            @Valid @RequestBody RecipeAddIngredientListDTO recipeAddIngredientListDTO, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+
+        var result = recipeService.addIngredient(id, recipeAddIngredientListDTO);
 
         if (result == null) {
             return ResponseEntity.notFound().build();

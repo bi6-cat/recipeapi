@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
@@ -24,7 +25,9 @@ public interface RecipeService {
 
     RecipeDTO update(UUID id, RecipeEditDTO recipeEditDTO);
 
-    RecipeAddIngredientDTO addIngredient(UUID id, UUID ingredientId, RecipeAddIngredientDTO recipeAddIngredientDTO);
+    RecipeAddIngredientDTO addIngredient(UUID id, RecipeAddIngredientDTO recipeAddIngredientDTO);
+
+    RecipeAddIngredientListDTO addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO);
 
     boolean delete(UUID id);
 }
