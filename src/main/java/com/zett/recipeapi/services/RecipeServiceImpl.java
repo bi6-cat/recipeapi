@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.zett.recipeapi.dtos.category.CategoryDTO;
-import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeIngredientAmountDTO;
 import com.zett.recipeapi.entities.Recipe;
 import com.zett.recipeapi.entities.RecipeIngredient;
 import com.zett.recipeapi.entities.RecipeIngredientId;
@@ -122,16 +122,15 @@ public class RecipeServiceImpl implements RecipeService {
                 recipeDTO.setCategory(categoryDTO);
             }
 
-            if (recipe.getRecipeIngredients() != null) {
-                var ingredientDTOs = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
-                    var ingredientDTO = new IngredientDTO();
-                    ingredientDTO.setId(recipeIngredient.getIngredient().getId());
-                    ingredientDTO.setName(recipeIngredient.getIngredient().getName());
-                    return ingredientDTO;
-                }).toList();
+            var recipeIngredients = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
+                var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+                recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+                recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+                recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+                return recipeIngredientAmount;
+            }).toList();
 
-                recipeDTO.setIngredients(ingredientDTOs);
-            }
+            recipeDTO.setIngredientAmount(recipeIngredients);
 
             return recipeDTO;
         }).toList();
@@ -143,12 +142,10 @@ public class RecipeServiceImpl implements RecipeService {
     public Page<RecipeDTO> findAll(String keyword, Pageable pageable) {
         // Find recipe by keyword
         Specification<Recipe> specification = (root, query, criteriaBuilder) -> {
-            // Neu keyword null thi tra ve null
             if (keyword == null) {
                 return null;
             }
 
-            // Neu keyword khong null
             // WHERE LOWER(name) LIKE %keyword%
             Predicate titlePredicate = criteriaBuilder.like(criteriaBuilder.lower(root.get("title")),
                     "%" + keyword.toLowerCase() + "%");
@@ -163,7 +160,6 @@ public class RecipeServiceImpl implements RecipeService {
 
         var recipes = recipeRepository.findAll(specification, pageable);
 
-        // Covert Page<Recipe> to Page<RecipeDTO>
         var recipeDTOs = recipes.map(recipe -> {
             var recipeDTO = new RecipeDTO();
             recipeDTO.setId(recipe.getId());
@@ -174,28 +170,24 @@ public class RecipeServiceImpl implements RecipeService {
             recipeDTO.setCookTime(recipe.getCookTime());
             recipeDTO.setServings(recipe.getServings());
 
-            // Check if entity recipe has category
             if (recipe.getCategory() != null) {
-                // Convert Category to CategoryDTO
                 var categoryDTO = new CategoryDTO();
                 categoryDTO.setId(recipe.getCategory().getId());
                 categoryDTO.setName(recipe.getCategory().getName());
                 categoryDTO.setDescription(recipe.getCategory().getDescription());
 
-                // Set categoryDTO to recipeDTO
                 recipeDTO.setCategory(categoryDTO);
             }
 
-            if (recipe.getRecipeIngredients() != null) {
-                var ingredientDTOs = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
-                    var ingredientDTO = new IngredientDTO();
-                    ingredientDTO.setId(recipeIngredient.getIngredient().getId());
-                    ingredientDTO.setName(recipeIngredient.getIngredient().getName());
-                    return ingredientDTO;
-                }).toList();
+            var recipeIngredients = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
+                var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+                recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+                recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+                recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+                return recipeIngredientAmount;
+            }).toList();
 
-                recipeDTO.setIngredients(ingredientDTOs);
-            }
+            recipeDTO.setIngredientAmount(recipeIngredients);
 
             return recipeDTO;
         });
@@ -232,16 +224,15 @@ public class RecipeServiceImpl implements RecipeService {
             recipeDTO.setCategory(categoryDTO);
         }
 
-        if (recipe.getRecipeIngredients() != null) {
-            var ingredientDTOs = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
-                var ingredientDTO = new IngredientDTO();
-                ingredientDTO.setId(recipeIngredient.getIngredient().getId());
-                ingredientDTO.setName(recipeIngredient.getIngredient().getName());
-                return ingredientDTO;
-            }).toList();
+        var recipeIngredients = recipe.getRecipeIngredients().stream().map(recipeIngredient -> {
+            var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+            recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+            recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+            recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+            return recipeIngredientAmount;
+        }).toList();
 
-            recipeDTO.setIngredients(ingredientDTOs);
-        }
+        recipeDTO.setIngredientAmount(recipeIngredients);
 
         return recipeDTO;
     }
@@ -319,18 +310,15 @@ public class RecipeServiceImpl implements RecipeService {
             newRecipeDTO.setCategory(categoryDTO);
         }
 
-        if(recipeIngredients != null){
-            var ingredients = recipeIngredients.stream().map(recipeIngredient ->{
-                var ingredient = ingredientRepository.findById(recipeIngredient.getIngredient().getId()).orElse(null);
+        var recipeIngredientAmounts = recipeIngredients.stream().map(recipeIngredient -> {
+            var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+            recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+            recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+            recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+            return recipeIngredientAmount;
+        }).toList();
 
-                var ingredientDTO = new IngredientDTO();
-                ingredientDTO.setId(ingredient.getId());
-                ingredientDTO.setName(ingredient.getName());
-
-                return ingredientDTO;
-            }).toList(); 
-            newRecipeDTO.setIngredients(ingredients);
-        }
+        newRecipeDTO.setIngredientAmount(recipeIngredientAmounts);
        
         return newRecipeDTO;
     }
@@ -420,18 +408,15 @@ public class RecipeServiceImpl implements RecipeService {
             return recipeIngredient;
         }).toList();
 
-        if(recipeIngredients != null){
-            var ingredients = recipeIngredients.stream().map(recipeIngredient ->{
-                var ingredient = ingredientRepository.findById(recipeIngredient.getIngredient().getId()).orElse(null);
+        var recipeIngredientAmounts = recipeIngredients.stream().map(recipeIngredient -> {
+            var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+            recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+            recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+            recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+            return recipeIngredientAmount;
+        }).toList();
 
-                var ingredientDTO = new IngredientDTO();
-                ingredientDTO.setId(ingredient.getId());
-                ingredientDTO.setName(ingredient.getName());
-
-                return ingredientDTO;
-            }).toList(); 
-            updatedRecipeDTO.setIngredients(ingredients);
-        }
+        updatedRecipeDTO.setIngredientAmount(recipeIngredientAmounts);
 
         return updatedRecipeDTO;
     }

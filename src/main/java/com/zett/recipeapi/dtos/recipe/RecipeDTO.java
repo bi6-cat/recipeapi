@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.hibernate.validator.constraints.Length;
 
 import com.zett.recipeapi.dtos.category.CategoryDTO;
-import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +43,6 @@ public class RecipeDTO {
 
     private CategoryDTO category;
 
-    private List<IngredientDTO> ingredients;
+    private List<RecipeIngredientAmountDTO> ingredientAmount;
 
 }
