@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import com.zett.recipeapi.dtos.ingredient.IngredientCreateBatchDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientCreateDTO;
 import com.zett.recipeapi.dtos.ingredient.IngredientDTO;
 import com.zett.recipeapi.services.IngredientService;
@@ -99,6 +100,24 @@ public class IngredientController {
 
         // Check if newIngredient is not null => return 201 Created with newIngredient
         return ResponseEntity.status(201).body(newIngredient);
+    }
+
+    @PostMapping("/batch")
+    @Operation(summary = "Create new batch ingredient")
+    @ApiResponse(responseCode = "201", description = "Create new ingredient")
+    @ApiResponse(responseCode = "400", description = "Bad Request")
+    public ResponseEntity<?> createBatch(@Valid @RequestBody IngredientCreateBatchDTO ingredientCreateBatchDTO,
+            BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+        var newIngredients = ingredientService.create(ingredientCreateBatchDTO);
+
+        if(newIngredients == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.status(201).body(newIngredients);
     }
 
     // Update - PutMapping - /api/v1/ingredients/{id}

@@ -1,5 +1,6 @@
 package com.zett.recipeapi.entities;
 
+import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -18,4 +19,7 @@ public class Ingredient {
 
     @Column(name = "name", unique = true, nullable = false, columnDefinition = "NVARCHAR(255)")
     private String name;
+
+    @OneToMany(mappedBy = "ingredient")
+    private Set<RecipeIngredient> recipeIngredients;
 }
