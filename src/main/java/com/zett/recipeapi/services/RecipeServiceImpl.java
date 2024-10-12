@@ -438,7 +438,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    public RecipeAddIngredientDTO addIngredient(UUID id,
+    public RecipeIngredientAmountDTO addIngredient(UUID id,
             RecipeAddIngredientDTO recipeAddIngredientDTO) {
         if (recipeAddIngredientDTO == null) {
             throw new IllegalArgumentException("RecipeAddIngredientDTO is required");
@@ -470,11 +470,16 @@ public class RecipeServiceImpl implements RecipeService {
         // Save recipe
         recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
 
-        return recipeIngredient != null ? recipeAddIngredientDTO : null;
+        var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+        recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+        recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+        recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+
+        return recipeIngredientAmount != null ? recipeIngredientAmount : null;
     }
 
     @Override
-    public RecipeAddIngredientListDTO addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO) {
+    public List<RecipeIngredientAmountDTO> addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO) {
         if (recipeAddIngredientListDTO == null) {
             throw new IllegalArgumentException("RecipeAddIngredientListDTO is required");
         }
@@ -484,7 +489,7 @@ public class RecipeServiceImpl implements RecipeService {
             throw new IllegalArgumentException("Recipe not found");
         }
 
-        var recipeIngredients = recipeAddIngredientListDTO.getIngredients().stream().map(recipeAddIngredientDTO -> {
+        var recipeIngredientAmounts = recipeAddIngredientListDTO.getIngredients().stream().map(recipeAddIngredientDTO -> {
             var ingredient = ingredientRepository.findById(recipeAddIngredientDTO.getIngredientId()).orElse(null);
 
             if (ingredient == null) {
@@ -501,10 +506,15 @@ public class RecipeServiceImpl implements RecipeService {
             
             recipeIngredient = recipeIngredientRepository.save(recipeIngredient);
 
-            return recipeIngredient;
+            var recipeIngredientAmount = new RecipeIngredientAmountDTO();
+            recipeIngredientAmount.setIngredientId(recipeIngredient.getIngredient().getId());
+            recipeIngredientAmount.setName(recipeIngredient.getIngredient().getName());
+            recipeIngredientAmount.setAmount(recipeIngredient.getAmount());
+
+            return recipeIngredientAmount;
         }).toList();
 
-        return recipeIngredients != null ? recipeAddIngredientListDTO : null;
+        return recipeIngredientAmounts != null ? recipeIngredientAmounts : null;
         
     }
 }

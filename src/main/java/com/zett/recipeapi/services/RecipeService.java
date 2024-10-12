@@ -11,6 +11,7 @@ import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeEditDTO;
+import com.zett.recipeapi.dtos.recipe.RecipeIngredientAmountDTO;
 
 public interface RecipeService {
     List<RecipeDTO> findAll();
@@ -25,9 +26,9 @@ public interface RecipeService {
 
     RecipeDTO update(UUID id, RecipeEditDTO recipeEditDTO);
 
-    RecipeAddIngredientDTO addIngredient(UUID id, RecipeAddIngredientDTO recipeAddIngredientDTO);
+    RecipeIngredientAmountDTO addIngredient(UUID id, RecipeAddIngredientDTO recipeAddIngredientDTO);
 
-    RecipeAddIngredientListDTO addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO);
+    List<RecipeIngredientAmountDTO> addIngredient(UUID id, RecipeAddIngredientListDTO recipeAddIngredientListDTO);
 
     boolean delete(UUID id);
 }
