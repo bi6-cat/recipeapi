@@ -3,6 +3,7 @@ package com.zett.recipeapi.controllers;
 import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import com.zett.recipeapi.dtos.category.CategoryCreateDTO;
 import com.zett.recipeapi.dtos.category.CategoryDTO;
+import com.zett.recipeapi.dtos.category.CategorySearchDTO;
+import com.zett.recipeapi.dtos.core.SortDirection;
 import com.zett.recipeapi.services.CategoryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,12 +26,12 @@ import jakarta.validation.Valid;
 @Tag(name = "categories", description = "The Category API")
 public class CategoryController {
     private final CategoryService categoryService;
-    private final PagedResourcesAssembler<CategoryDTO> PagedResourcesAssembler;
+    private final PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler;
 
     public CategoryController(CategoryService categoryService,
             PagedResourcesAssembler<CategoryDTO> pagedResourcesAssembler) {
         this.categoryService = categoryService;
-        this.PagedResourcesAssembler = pagedResourcesAssembler;
+        this.pagedResourcesAssembler = pagedResourcesAssembler;
     }
 
     // get all categories
@@ -50,7 +53,7 @@ public class CategoryController {
 
         var categories = categoryService.findAll(keyword, pageable);
 
-        var pageModel = PagedResourcesAssembler.toModel(categories);
+        var pageModel = pagedResourcesAssembler.toModel(categories);
 
         return ResponseEntity.ok(pageModel);
     }
@@ -63,6 +66,31 @@ public class CategoryController {
     public ResponseEntity<?> findById(@PathVariable UUID id) {
         var category = categoryService.findById(id);
         return ResponseEntity.ok(category);
+    }
+
+    @PostMapping("/search")
+    @Operation(summary = "Get all categories or search categories by keyword")
+    @ApiResponse(responseCode = "200", description = "Return all categories or search categories by keyword")
+    public ResponseEntity<?> search(@RequestBody CategorySearchDTO categorySearchDTO) {
+        // Check sort order
+        Pageable pageable = null;
+
+        if (categorySearchDTO.getOrder().equals(SortDirection.ASC)) {
+            pageable = PageRequest.of(categorySearchDTO.getPage(), categorySearchDTO.getSize(),
+                    Sort.by(categorySearchDTO.getSortBy()).ascending());
+        } else {
+            pageable = PageRequest.of(categorySearchDTO.getPage(), categorySearchDTO.getSize(),
+                    Sort.by(categorySearchDTO.getSortBy()).descending());
+        }
+
+        // Search category by keyword and paging
+        var categories = categoryService.findAll(categorySearchDTO.getKeyword(), pageable);
+
+        // Convert to PagedModel - Enhance data with HATEOAS - Easy to navigate with
+        // links
+        var pagedModel = pagedResourcesAssembler.toModel(categories);
+
+        return ResponseEntity.ok(pagedModel);
     }
 
     @PostMapping

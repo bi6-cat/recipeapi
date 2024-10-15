@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import com.zett.recipeapi.dtos.core.SortDirection;
+import com.zett.recipeapi.dtos.ingredient.IngredientSearchDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeAddIngredientListDTO;
 import com.zett.recipeapi.dtos.recipe.RecipeCreateDTO;
@@ -77,6 +79,32 @@ public class RecipeController {
         // Check if recipe is not null => return 200 OK with recipe
         return ResponseEntity.ok(recipe);
     }
+
+    @PostMapping("/search")
+    @Operation(summary = "Get all recipes or search recipes by keyword")
+    @ApiResponse(responseCode = "200", description = "Return all recipes or search recipes by keyword")
+    public ResponseEntity<?> search(@RequestBody IngredientSearchDTO recipeSearchDTO) {
+        // Check sort order
+        Pageable pageable = null;
+
+        if (recipeSearchDTO.getOrder().equals(SortDirection.ASC)) {
+            pageable = PageRequest.of(recipeSearchDTO.getPage(), recipeSearchDTO.getSize(),
+                    Sort.by(recipeSearchDTO.getSortBy()).ascending());
+        } else {
+            pageable = PageRequest.of(recipeSearchDTO.getPage(), recipeSearchDTO.getSize(),
+                    Sort.by(recipeSearchDTO.getSortBy()).descending());
+        }
+
+        // Search recipe by keyword and paging
+        var recipes = recipeService.findAll(recipeSearchDTO.getKeyword(), pageable);
+
+        // Convert to PagedModel - Enhance data with HATEOAS - Easy to navigate with
+        // links
+        var pagedModel = pagedResourcesAssembler.toModel(recipes);
+
+        return ResponseEntity.ok(pagedModel);
+    }
+
 
     // Create - PostMapping - /api/v1/recipes
     @PostMapping
