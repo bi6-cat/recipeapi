@@ -33,9 +33,16 @@
 	<dependencies>
 		<!-- security -->
 		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.12.6</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		
 		<!-- Swagger API Documentation -->
 		<dependency>
 			<groupId>org.springdoc</groupId>

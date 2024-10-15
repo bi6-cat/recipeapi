@@ -10,4 +10,5 @@ import com.zett.recipeapi.entities.User;
 public interface UserRepository extends JpaRepository <User, UUID>, JpaSpecificationExecutor<User> {
     User findByUsername(String username);
     User findByUsernameOrEmail(String username, String email);
+    boolean existsByUsername(String username);
 }
